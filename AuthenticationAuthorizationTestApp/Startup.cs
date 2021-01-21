@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using TestDataLibrary.DAL;
 using TestDataLibrary.DAL.Context;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using AuthenticationAuthorizationTestApp.Data;
 
 namespace AuthenticationAuthorizationTestApp
 {
@@ -28,6 +29,7 @@ namespace AuthenticationAuthorizationTestApp
         {
             string connection = Configuration.GetConnectionString("DefaultConnection");
             services.AddDbContext<TestDataLibraryContext>(options => options.UseSqlServer(connection));
+            services.AddTransient<DatabaseInitializer>();
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
@@ -38,8 +40,10 @@ namespace AuthenticationAuthorizationTestApp
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, DatabaseInitializer initializer)
         {
+            initializer.Initialize();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
