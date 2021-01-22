@@ -1,4 +1,5 @@
 ﻿using AuthenticationAuthorizationTestApp.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,6 +27,7 @@ namespace AuthenticationAuthorizationTestApp.Controllers
             return View();
         }
 
+        [Authorize]
         public IActionResult Privacy()
         {
             return View();

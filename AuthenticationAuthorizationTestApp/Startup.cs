@@ -34,6 +34,8 @@ namespace AuthenticationAuthorizationTestApp
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>
             {
                 options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                options.ExpireTimeSpan = TimeSpan.FromDays(15);
+                
             });
 
             services.AddControllersWithViews();

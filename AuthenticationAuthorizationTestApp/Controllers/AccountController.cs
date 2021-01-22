@@ -36,7 +36,7 @@ namespace AuthenticationAuthorizationTestApp.Controllers
 
                 if (user is null)
                 {
-                    //ModelState.AddModelError("", "Некорректные логин и(или) пароль");
+                    ModelState.AddModelError("", "Некорректные логин и(или) пароль");
 
                     return View(loginViewModel);
                 }
@@ -47,11 +47,17 @@ namespace AuthenticationAuthorizationTestApp.Controllers
                 }
             }
 
-            return View();
+            return View(loginViewModel);
+        }
+
+        public async Task<IActionResult> Logout() {
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            return RedirectToAction("Login", "Account");
         }
 
         private async Task Authenticate(string userName) {
-            var claims = new List<Claim> { 
+            var claims = new List<Claim> {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
             };
 
