@@ -27,7 +27,7 @@ namespace AuthenticationAuthorizationTestApp
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            string connection = Configuration.GetConnectionString("DefaultConnection");
+            string connection = Configuration.GetConnectionString("DefaultConnection_2");
             services.AddDbContext<TestDataLibraryContext>(options => options.UseSqlServer(connection));
             services.AddTransient<DatabaseInitializer>();
 
