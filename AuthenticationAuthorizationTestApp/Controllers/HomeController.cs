@@ -30,6 +30,9 @@ namespace AuthenticationAuthorizationTestApp.Controllers
         [Authorize]
         public IActionResult Privacy()
         {
+            ViewBag.Name = User.Identity.Name;
+            //HttpContext.User
+
             return View();
         }
 
