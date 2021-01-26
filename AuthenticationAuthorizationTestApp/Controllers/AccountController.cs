@@ -68,7 +68,15 @@ namespace AuthenticationAuthorizationTestApp.Controllers
                 ClaimsIdentity.DefaultRoleClaimType
                 );
 
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
+            await HttpContext.SignInAsync(
+                CookieAuthenticationDefaults.AuthenticationScheme
+                    , new ClaimsPrincipal(id)
+                    , new AuthenticationProperties
+                    {
+                        ExpiresUtc = DateTime.UtcNow.AddMonths(1),
+                        IsPersistent = true
+                    }
+                );
         }
     }
 }
