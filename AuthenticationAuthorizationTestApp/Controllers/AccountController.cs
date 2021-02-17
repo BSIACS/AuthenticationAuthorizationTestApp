@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -41,7 +42,7 @@ namespace AuthenticationAuthorizationTestApp.Controllers
                     return View(loginViewModel);
                 }
                 else {
-                    await Authenticate(loginViewModel.Email);
+                    await Authenticate(user);
 
                     return RedirectToAction("Index", "Home");
                 }
@@ -50,15 +51,40 @@ namespace AuthenticationAuthorizationTestApp.Controllers
             return View(loginViewModel);
         }
 
+
+        public async Task<IActionResult> Register(RegisterViewModel registerViewModel) {
+            if (ModelState.IsValid) {
+                User user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email == registerViewModel.Email);
+                if (user == null)
+                {
+                    user = new User { Email = registerViewModel.Email, Password = registerViewModel.Password };
+                    Role userRole = await _dataContext.Roles.FirstOrDefaultAsync(r => r.Name == "user");
+                    if (userRole != null)
+                        user.Role = userRole;
+
+                    _dataContext.Users.Add(user);
+                    await _dataContext.SaveChangesAsync();
+
+                    await Authenticate(user);
+
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                    ModelState.AddModelError("", "Некорректные логин и(или) парол");  
+            }
+            return View(registerViewModel);
+        }
+
         public async Task<IActionResult> Logout() {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             return RedirectToAction("Login", "Account");
         }
 
-        private async Task Authenticate(string userName) {
+        private async Task Authenticate(User user) {
             var claims = new List<Claim> {
-                new Claim(ClaimsIdentity.DefaultNameClaimType, userName)
+                new Claim(ClaimsIdentity.DefaultNameClaimType, user.Email),
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role?.Name),
             };
 
             ClaimsIdentity id = new ClaimsIdentity(

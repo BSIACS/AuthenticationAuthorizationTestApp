@@ -10,6 +10,7 @@ namespace TestDataLibrary.DAL.Context
     public class TestDataLibraryContext : DbContext
     {
         public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
 
         public TestDataLibraryContext([NotNullAttribute] DbContextOptions options) : base(options)
         {
