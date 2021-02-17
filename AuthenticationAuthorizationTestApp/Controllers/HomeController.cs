@@ -24,6 +24,9 @@ namespace AuthenticationAuthorizationTestApp.Controllers
 
         public IActionResult Index()
         {
+            ViewBag.Name = User.Identity.Name;
+            ViewBag.IsAuthenticated = HttpContext.User.Identity.IsAuthenticated;
+
             return View();
         }
 
@@ -31,7 +34,6 @@ namespace AuthenticationAuthorizationTestApp.Controllers
         public IActionResult Privacy()
         {
             ViewBag.Name = User.Identity.Name;
-            //HttpContext.User
 
             return View();
         }
