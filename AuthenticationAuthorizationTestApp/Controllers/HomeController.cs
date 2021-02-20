@@ -30,7 +30,7 @@ namespace AuthenticationAuthorizationTestApp.Controllers
             return View();
         }
 
-        [Authorize]
+        [Authorize(Roles = "administrator")]
         public IActionResult Privacy()
         {
             ViewBag.Name = User.Identity.Name;

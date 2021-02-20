@@ -18,6 +18,6 @@ namespace AuthenticationAuthorizationTestApp.ViewModels
         [Required(ErrorMessage = "Пароль введён не верно")]
         [DataType(DataType.Password)]
         [Compare(nameof(Password))]
-        public string ConfirmPassord { get; set; }
+        public string ConfirmPassword { get; set; }
     }
 }

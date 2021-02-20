@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +19,13 @@ namespace AuthenticationAuthorizationTestApp.Controllers
     {
         private readonly TestDataLibraryContext _dataContext;
 
-        public AccountController(TestDataLibraryContext dataContext)
+        public AccountController(TestDataLibraryContext dataContext, IConfiguration configuration)
         {
             _dataContext = dataContext;
+            Configuration = configuration;
         }
+
+        public IConfiguration Configuration { get; }
 
         [HttpGet]
         public IActionResult Login()
@@ -33,7 +38,40 @@ namespace AuthenticationAuthorizationTestApp.Controllers
         {
             if (ModelState.IsValid)
             {
-                User user = _dataContext.Users.FirstOrDefault(u => u.Email == loginViewModel.Email && u.Password == loginViewModel.Password);
+                User user = null;
+
+                #region as entity ORM query
+                //user = _dataContext.Users
+                //    .Include(u => u.Role)
+                //    .FirstOrDefault(u => u.Email == loginViewModel.Email && u.Password == loginViewModel.Password);
+                #endregion
+
+
+                #region as raw sql query
+                using (var connection = new SqlConnection(Configuration.GetConnectionString("DefaultConnection_1")))
+                {
+                    connection.Open();
+
+                    SqlCommand command = new SqlCommand(
+                        "SELECT[u].[Id], [u].[Email], [u].[Password], [u].[RoleId], [r].[Name]"
+                        + "FROM[Users] AS[u]"
+                        + "LEFT JOIN[Roles] AS[r] ON[u].[RoleId] = [r].[Id]"
+                        + $"WHERE (Email='{loginViewModel.Email}' AND Password = '{loginViewModel.Password}')"
+                        , connection);
+
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    while (reader.Read())
+                    {
+                        user = new User();
+                        user.Id = reader.GetInt32(reader.GetOrdinal("Id"));
+                        user.Email = reader.GetString(reader.GetOrdinal("Email"));
+                        user.Password = reader.GetString(reader.GetOrdinal("Password"));
+                        user.RoleId = reader.GetInt32(reader.GetOrdinal("RoleId"));
+                        user.Role = new Role { Id = user.RoleId.Value, Name = reader.GetString(reader.GetOrdinal("Name")) };
+                    };
+                }
+                #endregion
 
                 if (user is null)
                 {
@@ -51,7 +89,14 @@ namespace AuthenticationAuthorizationTestApp.Controllers
             return View(loginViewModel);
         }
 
+        [HttpGet]
+        public IActionResult Register()
+        {
+            return View();
+        }
 
+        [ValidateAntiForgeryToken]
+        [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel) {
             if (ModelState.IsValid) {
                 User user = await _dataContext.Users.FirstOrDefaultAsync(u => u.Email == registerViewModel.Email);
